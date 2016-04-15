@@ -18,18 +18,30 @@ class MainApplication(tk.Frame):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
+        #CONFIGURE BUTTON STYLES 
+        s = ttk.Style()
+        s.configure('TButton',background = 'black', foreground = 'white',
+                font='Helvetica')
+        s.map('TButton',
+                background=[('disabled','black'),('active','black')]
+                )
+
+
+        #UIMENU 
         self.uiMenu = UIMenu(self)
         self.parent.config(menu=self.uiMenu.menu)
-
+        
+        #TOOLBAR + STATUS BAR 
         self.toolbar = Frame(self.parent)
-        self.toolbarButton1 = Button(self.toolbar, text='Button')
+        self.toolbarButton1 = ttk.Button(self.toolbar, text='Button', style='TButton')
         self.toolbarButton1.pack(side=LEFT, padx=2, pady=2)
         self.toolbar.pack(side=TOP, fill=X)
 
-        self.statusbar = Label(self.parent, text='Statusbar', bd=1, relief=SUNKEN, anchor=W)
+        self.statusbar = Label(self.parent, text='Statusbar', bd=1, relief=SUNKEN, anchor=W, bg = "#000000", fg = "#FFFFFF")
         self.statusbar.pack(side=BOTTOM, fill=X)
         #networkPlotter = NetworkPlotter(root)
 
+        #MAIN UI 
         self.notebook = ttk.Notebook(self)
         self.frameSniff = ttk.Frame(self.notebook)
         self.frameArp = ttk.Frame(self.notebook)
@@ -40,12 +52,18 @@ class MainApplication(tk.Frame):
         self.notebook.add(self.frameDhcp, text='DHCP Servers')
         self.notebook.add(self.frameSysInfo, text='System Info')
         self.notebook.pack(fill=X)
+        
 
-        self.sniffLabelFrame = ttk.LabelFrame(self.frameSniff, text="Sniffer")
+        #LABELFRAME STYLE 
+        s1 = ttk.Style()
+        s1.configure('TLabelframe.Label',font="Helvetica") 
+
+
+        self.sniffLabelFrame = ttk.LabelFrame(self.frameSniff, text="Sniffer", style = "TLabelframe.Label")
         self.sniffLabelFrame.pack(padx=10, pady=10)
-        self.sniffButton = tk.Button(self.sniffLabelFrame, text="Sniff", command=self.beginSniff)
+        self.sniffButton = ttk.Button(self.sniffLabelFrame, text="Sniff", command=self.beginSniff, style='TButton')
         self.sniffButton.pack(side=LEFT)
-        self.stopSniffButton = tk.Button(self.sniffLabelFrame, text="Stop sniffing", command=self.stopSniff, state="disabled")
+        self.stopSniffButton = ttk.Button(self.sniffLabelFrame, text="Stop sniffing", command=self.stopSniff, state="disabled", style='TButton')
         self.stopSniffButton.pack(side=LEFT)
 
         self.sniffTv = ttk.Treeview(self.frameSniff)
@@ -75,7 +93,7 @@ class MainApplication(tk.Frame):
         self.arpTv.column('status', anchor='center', width=100)
         self.arpTv.pack(fill=X)
 
-        self.addDhcpLabelFrame = ttk.LabelFrame(self.frameDhcp, text="Add trusted server")
+        self.addDhcpLabelFrame = ttk.LabelFrame(self.frameDhcp, text="Add trusted server", style='TLabelframe.Label')
         self.addDhcpLabelFrame.pack(padx=10, pady=10)
         self.addDhcpIpLabel = tk.Label(self.addDhcpLabelFrame, text="Server IP address")
         self.addDhcpIpLabel.pack()
@@ -86,7 +104,7 @@ class MainApplication(tk.Frame):
         self.addDhcpMacLabel.pack()
         self.addDhcpMacEntry = tk.Entry(self.addDhcpLabelFrame)
         self.addDhcpMacEntry.pack()
-        self.addDhcpButton = tk.Button(self.addDhcpLabelFrame, text="Add", command=self.addDhcpButtonPressed)
+        self.addDhcpButton = ttk.Button(self.addDhcpLabelFrame, text="Add", command=self.addDhcpButtonPressed, style = 'TButton')
         self.addDhcpButton.pack()
 
         self.dhcpTv = ttk.Treeview(self.frameDhcp)
