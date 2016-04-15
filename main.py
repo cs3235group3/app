@@ -77,10 +77,17 @@ class MainApplication(tk.Frame):
 
         self.addDhcpLabelFrame = ttk.LabelFrame(self.frameDhcp, text="Add trusted server")
         self.addDhcpLabelFrame.pack(padx=10, pady=10)
-        self.addDhcpAddrEntry = tk.Entry(self.addDhcpLabelFrame)
-        self.addDhcpAddrEntry.pack(side=LEFT)
-        self.addDhcpButton = tk.Button(self.addDhcpLabelFrame, text="Add")
-        self.addDhcpButton.pack(side=LEFT)
+        self.addDhcpIpLabel = tk.Label(self.addDhcpLabelFrame, text="Server IP address")
+        self.addDhcpIpLabel.pack()
+        self.addDhcpIpEntry = tk.Entry(self.addDhcpLabelFrame)
+        self.addDhcpIpEntry.pack()
+
+        self.addDhcpMacLabel = tk.Label(self.addDhcpLabelFrame, text="Server Mac address")
+        self.addDhcpMacLabel.pack()
+        self.addDhcpMacEntry = tk.Entry(self.addDhcpLabelFrame)
+        self.addDhcpMacEntry.pack()
+        self.addDhcpButton = tk.Button(self.addDhcpLabelFrame, text="Add", command=self.addDhcpButtonPressed)
+        self.addDhcpButton.pack()
 
         self.dhcpTv = ttk.Treeview(self.frameDhcp)
         self.dhcpTv['columns'] = ('ip', 'mac', 'date')
@@ -109,6 +116,16 @@ class MainApplication(tk.Frame):
         self.updater = Updater(1, 'Updater-1', 1, self)
         self.updater.start()
 
+    def addDhcpButtonPressed(self):
+        ip = self.addDhcpIpEntry.get()
+        mac = self.addDhcpMacEntry.get().lower()
+        isValidIp =re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip)
+        macRe = re.compile(r'^([0-9A-F]{1,2})' + '\:([0-9A-F]{1,2})'*5 + '$', re.IGNORECASE)
+        isValidMac = macRe.match(mac)
+        if isValidIp and isValidMac:
+            self.dhcpDefender.add_trusted_server(ip, mac)
+
+
     def beginSniff(self):
         self.sniffButton.config(state="disabled")
         self.stopSniffButton.config(state="normal")
@@ -125,6 +142,11 @@ class MainApplication(tk.Frame):
         elif packet[ARP].op == 2:
             response = 'Response: ' + packet[ARP].hwsrc + ' has address ' + packet[ARP].psrc
         self.sniffTv.insert("", 0, text=response, values=("192"," MAC", "Received at"))
+
+    def updateDhcpTv(self, trusted_servers):
+        self.dhcpTv.delete(*self.dhcpTv.get_children())
+        for server in trusted_servers:
+            self.dhcpTv.insert("", 0, text="Server name", values=(server['ip'], server['mac']))
 
     def import_arp_cache(self):
         self.arpTv.delete(*self.arpTv.get_children())
