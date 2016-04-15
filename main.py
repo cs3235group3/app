@@ -4,8 +4,6 @@ import ttk
 import platform
 from scapy.all import *
 from UIMenu import UIMenu
-from UIToolbar import UIToolbar
-from UIStatusbar import UIStatusbar
 from NetworkPlotter import NetworkPlotter
 import matplotlib
 matplotlib.use('TkAgg')
@@ -21,8 +19,14 @@ class MainApplication(tk.Frame):
 
         self.uiMenu = UIMenu(self)
         self.parent.config(menu=self.uiMenu.menu)
-        #self.uiToolbar = UIToolbar(self)
-        self.uiStatusbar = UIStatusbar(self)
+
+        self.toolbar = Frame(self.parent)
+        self.toolbarButton1 = Button(self.toolbar, text='Button')
+        self.toolbarButton1.pack(side=LEFT, padx=2, pady=2)
+        self.toolbar.pack(side=TOP, fill=X)
+
+        self.statusbar = Label(self.parent, text='Statusbar', bd=1, relief=SUNKEN, anchor=W)
+        self.statusbar.pack(side=BOTTOM, fill=X)
         #networkPlotter = NetworkPlotter(root)
 
         self.notebook = ttk.Notebook(self)
