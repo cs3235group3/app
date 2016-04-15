@@ -2,7 +2,7 @@ from Tkinter import *
 
 class UIMenu:
     def __init__(self, parent):
-        self.menu = Menu(parent)
+        self.menu = Menu(parent, bg = "#000000", fg = "#FFFFFF")
 
         self.fileMenu = Menu(self.menu)
         self.menu.add_cascade(label='File', menu=self.fileMenu)
