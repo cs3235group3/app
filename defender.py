@@ -229,4 +229,3 @@ d.determine_mapping()
 # 1. Send an ARP 'who-has' packet
 # 2. If received a lot of replies, send a TCP SYN packet to each of them
 # 3. The one who replied is the real one
-

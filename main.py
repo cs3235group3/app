@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 from Sniffer import Sniffer
 from Updater import Updater
+from DhcpDefender import DhcpDefender
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
@@ -99,6 +100,8 @@ class MainApplication(tk.Frame):
         strPlatform = 'Platform: ' + platform.platform()
         self.platformLabel = tk.Label(self.frameSysInfo, text=strPlatform)
         self.platformLabel.pack()
+
+        self.dhcpDefender = DhcpDefender(self)
 
         #self.sniffer = Sniffer(1, 'Sniffer-1', 1, self)
         #self.sniffer.start()
