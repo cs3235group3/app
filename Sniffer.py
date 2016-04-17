@@ -40,4 +40,5 @@ class Sniffer(threading.Thread):
         sniff(prn=self.packet_callback, filter="arp", store=0, count=1)
 
     def packet_callback(self, packet):
+
         self.app.updateSniffTv(packet)
