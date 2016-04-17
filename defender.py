@@ -1,9 +1,6 @@
 from scapy.all import *
+from scapy.layers.l2 import arping
 
-import thread
-import time
-
-# Use this program with the interactive Python shell
 
 class ArpDefender:
   """

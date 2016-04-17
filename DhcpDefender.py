@@ -1,5 +1,8 @@
 import sqlite3
 from scapy.all import *
+from scapy.layers.inet import TCP, IP
+from scapy.layers.dhcp import DHCP
+
 
 class DhcpDefender:
     def __init__(self, parent):
@@ -48,3 +51,15 @@ class DhcpDefender:
 
     def update_view(self):
         self.parent.updateDhcpTv(self.trusted_servers)
+
+    def clear_db(self):
+        self.init_db(self.conn)
+        self.trusted_servers = []
+        self.update_view()
+
+
+    def dhcp_pkt_callback(self, packet):
+        for entry in self.trusted_servers:
+            if entry['ip'] == packet[IP].src and entry['mac'] == packet[Ether].src:
+                return 1
+        return 0

@@ -1,6 +1,8 @@
 from scapy.all import *
 import threading
 import time
+from scapy.layers.dhcp import DHCP
+
 
 class Sniffer(threading.Thread):
     def __init__(self, threadID, name, counter, app):
@@ -37,8 +39,11 @@ class Sniffer(threading.Thread):
         self.pause_cond.acquire()
 
     def sniff(self):
-        sniff(prn=self.packet_callback, filter="arp", store=0, count=1)
+        sniff(prn=self.packet_callback, filter="arp or (udp and (port 67 or 68))", store=0, count=1)
 
     def packet_callback(self, packet):
-
         self.app.updateSniffTv(packet)
+        if packet[ARP]:
+            self.app.process_arp(packet)
+        elif packet[DHCP]:
+            self.app.process_dhcp(packet)
