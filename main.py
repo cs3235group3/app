@@ -2,6 +2,7 @@ import Tkinter as tk
 from Tkinter import *
 import ttk
 import platform
+import datetime
 from scapy.all import *
 from UIMenu import UIMenu
 from NetworkPlotter import NetworkPlotter
@@ -27,7 +28,7 @@ class MainApplication(tk.Frame):
         # self.toolbarButton1.pack(side=LEFT, padx=2, pady=2)
         # self.toolbar.pack(side=TOP, fill=X)
 
-        self.statusbar = Label(self.parent, text='Statusbar', bd=1, relief=SUNKEN, anchor=W)
+        self.statusbar = Label(self.parent, text='Ready', bd=1, relief=SUNKEN, anchor=W)
         self.statusbar.pack(side=BOTTOM, fill=X)
 
         self.notebook = ttk.Notebook(self.parent)
@@ -77,6 +78,12 @@ class MainApplication(tk.Frame):
 
         self.addDhcpLabelFrame = ttk.LabelFrame(self.frameDhcp, text="Add trusted server")
         self.addDhcpLabelFrame.pack(padx=10, pady=10)
+
+        self.addDhcpNameLabel = ttk.Label(self.addDhcpLabelFrame, text="Server name")
+        self.addDhcpNameLabel.pack()
+        self.addDhcpNameEntry = ttk.Entry(self.addDhcpLabelFrame)
+        self.addDhcpNameEntry.pack()
+
         self.addDhcpIpLabel = ttk.Label(self.addDhcpLabelFrame, text="Server IP address")
         self.addDhcpIpLabel.pack()
         self.addDhcpIpEntry = ttk.Entry(self.addDhcpLabelFrame)
@@ -120,13 +127,14 @@ class MainApplication(tk.Frame):
         self.updater.start()
 
     def addDhcpButtonPressed(self):
+        name = self.addDhcpNameEntry.get()
         ip = self.addDhcpIpEntry.get()
         mac = self.addDhcpMacEntry.get().lower()
         isValidIp =re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip)
         macRe = re.compile(r'^([0-9A-F]{1,2})' + '\:([0-9A-F]{1,2})'*5 + '$', re.IGNORECASE)
         isValidMac = macRe.match(mac)
         if isValidIp and isValidMac:
-            self.dhcpDefender.add_trusted_server(ip, mac)
+            self.dhcpDefender.add_trusted_server(name, ip, mac)
 
     def clrDhcpButtonPressed(self):
         self.dhcpDefender.clear_db()
@@ -146,12 +154,13 @@ class MainApplication(tk.Frame):
             response = 'Request: ' + packet[ARP].psrc + ' is asking about ' + packet[ARP].pdst
         elif packet[ARP].op == 2:
             response = 'Response: ' + packet[ARP].hwsrc + ' has address ' + packet[ARP].psrc
-        self.sniffTv.insert("", 0, text=response, values=("192"," MAC", "Received at"))
+        timeStr = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.sniffTv.insert("", 0, text=response, values=(packet[ARP].psrc, packet[ARP].hwsrc, timeStr))
 
     def updateDhcpTv(self, trusted_servers):
         self.dhcpTv.delete(*self.dhcpTv.get_children())
         for server in trusted_servers:
-            self.dhcpTv.insert("", 0, text="Server name", values=(server['ip'], server['mac']))
+            self.dhcpTv.insert("", 0, text=server['name'], values=(server['ip'], server['mac'], server['date']))
 
     def import_arp_cache(self):
         self.arpTv.delete(*self.arpTv.get_children())
@@ -174,9 +183,11 @@ class MainApplication(tk.Frame):
         result = self.arpDefender.arp_pkt_callback(packet)
         if result == -1:    # inconsistent headers
             print("inconsistent headers")
+            self.statusbar.config(text="Warning: Inconsistent header packet detected.")
             pass
         elif result == 0:   # failed active check
             print("failed active check")
+            self.statusbar.config(text="Warning: You might be under ARP spoof attack.")
             pass
         elif result == 1:   # passed active check
             print("passed active check")
@@ -186,6 +197,7 @@ class MainApplication(tk.Frame):
         result = self.dhcpDefender.dhcp_pkt_callback(packet)
         if result == 0:     # unknown dhcp server
             print("Unknown dhcp server")
+            self.statusbar.config(text="Warning: Untrusted DHCP server present in network.")
             pass
         elif result == 1:
             print("Trusted dhcp server")

@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 from scapy.all import *
 from scapy.layers.inet import TCP, IP
 from scapy.layers.dhcp import DHCP
@@ -19,12 +20,13 @@ class DhcpDefender:
             else:
                 print("Correct server acknowledged DHCP response")
 
-    def add_trusted_server(self, server_ip, server_mac):
+    def add_trusted_server(self, server_name, server_ip, server_mac):
         print("adding trusted server")
-        query = 'INSERT INTO DHCP_SERVERS VALUES ("' + server_ip + '", "' + server_mac + '");'
+        timeStr = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        query = 'INSERT INTO DHCP_SERVERS VALUES ("' + server_name + '", "' + server_ip + '", "' + server_mac + '", "' + timeStr + '");'
         self.conn.execute(query)
         self.conn.commit()
-        server = {'ip': server_ip, 'mac': server_mac}
+        server = {'name': server_name, 'ip': server_ip, 'mac': server_mac, 'date': timeStr}
         self.trusted_servers.append(server)
         self.update_view()
 
@@ -39,13 +41,15 @@ class DhcpDefender:
     def init_db(self, conn):
         conn.execute("DROP TABLE IF EXISTS DHCP_SERVERS;")
         conn.execute('''CREATE TABLE DHCP_SERVERS
-    				(IP 	VARCHAR 		NOT NULL,
-    				 MAC 	VARCHAR 		NOT NULL);''')
+    				(NAME   VARCHAR         NOT NULL,
+    				 IP 	VARCHAR 		NOT NULL,
+    				 MAC 	VARCHAR 		NOT NULL,
+    				 DATE   VARCHAR         NOT NULL);''')
 
     def load_db(self, conn):
         trusted_servers = []
         for row in conn.execute('SELECT * FROM DHCP_SERVERS;'):
-            server = {'ip': row[0], 'mac': row[1]}
+            server = {'name': row[0], 'ip': row[1], 'mac': row[2], 'date': row[3]}
             trusted_servers.append(server)
         return trusted_servers
 
